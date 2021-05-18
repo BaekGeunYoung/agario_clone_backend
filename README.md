@@ -68,3 +68,11 @@ agar.io 클론 코딩
     - who : room 안의 모든 유저
     - when : room 안의 먹이가 x개 이하로 떨어졌을 때
     - what : 새롭게 추가된 먹이 List
+
+### message format
+```
+{
+    "type": String // JOIN / POSITION / MERGED 등등
+    "body": { ~~ } // TBD
+}
+```
