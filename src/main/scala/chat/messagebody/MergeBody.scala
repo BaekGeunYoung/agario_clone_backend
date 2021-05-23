@@ -2,4 +2,4 @@ package chat.messagebody
 
 import java.util.UUID
 
-class MergeBody(val colonyId: UUID)
+case class MergeBody(colonyId: UUID)
