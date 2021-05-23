@@ -1,18 +1,19 @@
-package chat
+package agario.actor
 
 import java.util.UUID
 
 import akka.actor._
-import chat.`object`.{Position, User}
-import chat.messagebody.{JoinBody, PositionChangeBody}
+import agario.JsonProtocol._
+import agario.`object`.{Position, User}
+import agario.messagebody.{JoinBody, PositionChangeBody}
+import agario.{OutgoingMessageTypes, Rooms, WSIncomingMessage, WSOutgoingMessage}
 import com.typesafe.config.ConfigFactory
-import chat.JsonProtocol._
 import spray.json._
 
 import scala.collection.mutable
 import scala.util.Random
 
-object Room {
+object RoomActor {
   val configFactory = ConfigFactory.load()
 
   val roomHeight = configFactory.getDouble("roomHeight")
@@ -23,8 +24,8 @@ object Room {
   case class IncomingMessage(userId: UUID, message: WSIncomingMessage)
 }
 
-class Room extends Actor {
-  import Room._
+class RoomActor extends Actor {
+  import RoomActor._
   import Rooms.rooms
   var users: mutable.Map[UUID, (User, ActorRef)] = mutable.Map.empty
 
@@ -53,15 +54,15 @@ class Room extends Actor {
 
     case IncomingMessage(userId, message) =>
       message.`type` match {
-        case chat.IncomingMessageTypes.positionChanged =>
+        case agario.IncomingMessageTypes.positionChanged =>
           val body = message.body.convertTo[PositionChangeBody]
 
           users(userId)._1.position = body.position
 
           // send OBJECTS
 
-        case chat.IncomingMessageTypes.merge =>
-        case chat.IncomingMessageTypes.eat =>
+        case agario.IncomingMessageTypes.merge =>
+        case agario.IncomingMessageTypes.eat =>
       }
   }
 

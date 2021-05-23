@@ -1,4 +1,4 @@
-package chat.messagebody
+package agario.messagebody
 
 import java.util.UUID
 

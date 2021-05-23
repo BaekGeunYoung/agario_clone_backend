@@ -1,4 +1,4 @@
-package chat.`object`
+package agario.`object`
 
 import java.util.UUID
 

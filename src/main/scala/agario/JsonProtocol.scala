@@ -1,6 +1,6 @@
-package chat
+package agario
 
-import chat.messagebody.{JoinBody, PositionChangeBody}
+import agario.messagebody.{JoinBody, PositionChangeBody}
 import spray.json.DefaultJsonProtocol
 import converter.{EnumJsonConverter, PositionJsonConverter, UserJsonConverter}
 

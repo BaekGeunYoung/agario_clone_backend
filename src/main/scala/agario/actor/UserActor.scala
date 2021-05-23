@@ -1,8 +1,9 @@
-package chat
+package agario.actor
 
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef}
+import agario.{WSIncomingMessage, WSOutgoingMessage}
 
 object UserActor {
   case class Connected(outgoing: ActorRef, userId: UUID, userName: String)
@@ -19,7 +20,7 @@ class UserActor(room: ActorRef) extends Actor {
   }
 
   def connected(outgoing: ActorRef, userId: UUID, username: String): Receive = {
-    room ! Room.Join(userId, username)
+    room ! RoomActor.Join(userId, username)
 
     {
       case incomingMessage: WSIncomingMessage =>

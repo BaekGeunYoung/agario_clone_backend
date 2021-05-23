@@ -1,4 +1,4 @@
-package chat
+package agario
 
 import java.util.UUID
 
@@ -9,7 +9,8 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.stream._
 import akka.stream.scaladsl._
-import chat.JsonProtocol._
+import agario.JsonProtocol._
+import agario.actor.UserActor
 import spray.json._
 
 import scala.io.StdIn

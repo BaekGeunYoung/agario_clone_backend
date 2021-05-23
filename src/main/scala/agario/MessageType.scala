@@ -1,4 +1,4 @@
-package chat
+package agario
 
 object IncomingMessageTypes extends Enumeration {
   val positionChanged = Value("POSITION_CHANGED")

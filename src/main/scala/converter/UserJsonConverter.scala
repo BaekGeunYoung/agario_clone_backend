@@ -2,7 +2,7 @@ package converter
 
 import java.util.UUID
 
-import chat.`object`.User
+import agario.`object`.User
 import spray.json.{DeserializationException, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
 class UserJsonConverter() extends RootJsonFormat[User] {

@@ -1,6 +1,7 @@
-package chat
+package agario
 
 import akka.actor.{ActorRef, ActorSystem, Props}
+import agario.actor.RoomActor
 import com.typesafe.config.ConfigFactory
 
 object Rooms {
@@ -13,7 +14,7 @@ object Rooms {
   }
 
   private def createNewRoom()(implicit actorSystem: ActorSystem): ActorRef = {
-    val room = actorSystem.actorOf(Props(new Room))
+    val room = actorSystem.actorOf(Props(new RoomActor))
     Rooms.rooms = Rooms.rooms :+ (room, 0)
 
     room

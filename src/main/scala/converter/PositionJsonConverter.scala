@@ -1,6 +1,6 @@
 package converter
 
-import chat.`object`.Position
+import agario.`object`.Position
 import spray.json.{JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
 object PositionJsonConverter {
