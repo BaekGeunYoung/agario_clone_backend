@@ -10,7 +10,7 @@ agar.io 클론 코딩
 {
     "username": String
     "id": UUID
-    "position": (Double, Double)
+    "position": {"x": Double, "y": Double}
     "radius": Double
 }
 ```
@@ -19,7 +19,7 @@ agar.io 클론 코딩
 ```
 {
     "id": UUID
-    "position": (Double, Double)
+    "position": {"x": Double, "y": Double}
     "radius": Double
 }
 ```
