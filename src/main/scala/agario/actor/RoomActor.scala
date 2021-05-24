@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.actor._
 import agario.JsonProtocol._
 import agario.`object`.{Position, Prey, User}
-import agario.messagebody.{EatBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody}
+import agario.messagebody.{EatBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody, SeedBody}
 import agario.{OutgoingMessageTypes, Rooms, WSIncomingMessage, WSOutgoingMessage}
 import com.typesafe.config.ConfigFactory
 import spray.json._
@@ -32,9 +32,12 @@ class RoomActor extends Actor {
   var users: concurrent.Map[UUID, (User, ActorRef)] = concurrent.TrieMap.empty
   var preys: concurrent.Map[UUID, Prey] = initPreys
 
-  def initPreys: concurrent.Map[UUID, Prey] =
+  private def initPreys: concurrent.Map[UUID, Prey] = supplyPreys(100)
+
+
+  private def supplyPreys(num: Int): concurrent.Map[UUID, Prey] =
     concurrent.TrieMap.from(
-      (0 until 100).map { _ =>
+      (0 until num).map { _ =>
         val id = UUID.randomUUID()
         val prey = new Prey(id, genRandomPosition, preyRadius)
         (id, prey)
@@ -117,6 +120,8 @@ class RoomActor extends Actor {
           if (canEat) {
             eater.updateRadius(prey.radius)
 
+            preys -= body.preyId
+
             // eated message를 모두에게 보냄
             broadCast(
               WSOutgoingMessage(
@@ -124,6 +129,20 @@ class RoomActor extends Actor {
                 MergedBody(eater).toJson
               )
             )
+
+            // 먹이 갯수가 많이 떨어지면 seeding 해주기
+            if (preys.size < 50) {
+              val newPreys = supplyPreys(50)
+
+              preys ++= newPreys
+
+              broadCast(
+                WSOutgoingMessage(
+                  OutgoingMessageTypes.seed,
+                  SeedBody(newPreys.map(_._2).toList).toJson
+                )
+              )
+            }
           }
       }
   }

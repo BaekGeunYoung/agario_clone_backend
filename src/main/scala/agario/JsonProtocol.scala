@@ -1,6 +1,6 @@
 package agario
 
-import agario.messagebody.{EatBody, EatedBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody}
+import agario.messagebody.{EatBody, EatedBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody, SeedBody}
 import spray.json.DefaultJsonProtocol
 import converter.{EnumJsonConverter, PositionJsonConverter, PreyJsonConverter, UUIDJsonConverter, UserJsonConverter}
 
@@ -26,4 +26,5 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val mergedBodyConverter = jsonFormat1(MergedBody)
   implicit val eatBodyConverter = jsonFormat1(EatBody)
   implicit val eatedBodyConverter = jsonFormat1(EatedBody)
+  implicit val seedBodyConverter = jsonFormat1(SeedBody)
 }

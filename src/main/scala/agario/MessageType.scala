@@ -12,4 +12,5 @@ object OutgoingMessageTypes extends Enumeration {
   val merged = Value("MERGED")
   val warsMerged = Value("WAS_MERGED")
   val eated = Value("EATED")
+  val seed = Value("SEED")
 }
