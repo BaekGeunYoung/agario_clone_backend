@@ -4,6 +4,6 @@ import java.util.UUID
 
 class Prey(
     val id: UUID,
-    val position: (Double, Double),
+    val position: Position,
     val radius: Double
 )

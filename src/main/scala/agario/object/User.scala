@@ -7,4 +7,9 @@ class User(
   val username: String,
   var position: Position,
   var radius: Double
-)
+) {
+  def updateRadius(smallRadius: Double): Double = {
+    val areaSum = (Math.PI * radius * radius) + (Math.PI * smallRadius * smallRadius)
+    Math.sqrt(areaSum / Math.PI)
+  }
+}

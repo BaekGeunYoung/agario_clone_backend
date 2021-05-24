@@ -135,7 +135,7 @@ username은 사용자로부터 입력받은 값, id는 클라이언트가 UUID�
     
 ```json
 {
-  "type": "WAS_MERGED",
+  "type": "EATED",
   "body": {
     "position": {"x": ?, "y": ?},
     "radius": ?

@@ -2,4 +2,4 @@ package agario
 
 import spray.json.JsValue
 
-case class WSIncomingMessage(val `type`: IncomingMessageTypes.Value, val body: JsValue)
+case class WSIncomingMessage(`type`: IncomingMessageTypes.Value, body: JsValue)
