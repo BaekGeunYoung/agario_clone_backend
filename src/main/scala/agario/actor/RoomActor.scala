@@ -2,13 +2,11 @@ package agario.actor
 
 import java.util.UUID
 
-import akka.actor._
-import agario.JsonProtocol._
+import agario.Rooms
 import agario.`object`.{Position, Prey, User}
-import agario.messagebody.{EatBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody, SeedBody}
-import agario.{OutgoingMessageTypes, Rooms, WSIncomingMessage, WSOutgoingMessage}
+import agario.messagebody._
+import akka.actor._
 import com.typesafe.config.ConfigFactory
-import spray.json._
 
 import scala.collection._
 import scala.util.Random
@@ -22,7 +20,8 @@ object RoomActor {
   val preyRadius = configFactory.getDouble("preyRadius")
 
   case class Join(userId: UUID, username: String)
-  case class IncomingMessage(userId: UUID, message: WSIncomingMessage)
+  case class IncomingMessage(userId: UUID, body: IncomingMessageBody)
+  case class OutgoingMessage(body: OutgoingMessageBody)
 }
 
 class RoomActor extends Actor {
@@ -33,7 +32,6 @@ class RoomActor extends Actor {
   var preys: concurrent.Map[UUID, Prey] = initPreys
 
   private def initPreys: concurrent.Map[UUID, Prey] = supplyPreys(100)
-
 
   private def supplyPreys(num: Int): concurrent.Map[UUID, Prey] =
     concurrent.TrieMap.from(
@@ -61,7 +59,7 @@ class RoomActor extends Actor {
         else pair
       }
 
-      broadCast(WSOutgoingMessage(OutgoingMessageTypes.join, JoinBody(newUser).toJson))
+      broadCast(JoinBody(newUser))
 
       context.watch(sender())
 
@@ -70,24 +68,16 @@ class RoomActor extends Actor {
       users -= terminatedUser._1
 
     case IncomingMessage(userId, message) =>
-      message.`type` match {
-        case agario.IncomingMessageTypes.positionChanged =>
-          val body = message.body.convertTo[PositionChangeBody]
+      message match {
+        case PositionChangeBody(position) =>
+          users(userId)._1.position = position
 
-          users(userId)._1.position = body.position
+          broadCast(ObjectsBody(users.map(_._2._1).toList, preys.map(_._2).toList))
 
-          broadCast(
-            WSOutgoingMessage(
-              OutgoingMessageTypes.objects,
-              ObjectsBody(users.map(_._2._1).toList, preys.map(_._2).toList).toJson
-            )
-          )
-
-        case agario.IncomingMessageTypes.merge =>
-          val body = message.body.convertTo[MergeBody]
+        case MergeBody(colonyId) =>
           // merge 가능한지 vaildation
           val (conquerer, _) = users(userId)
-          val (colony, colonyActor) = users(body.colonyId)
+          val (colony, colonyActor) = users(colonyId)
 
           val distance = conquerer.position distanceFrom colony.position
           val canMerge = distance <= conquerer.radius
@@ -95,24 +85,19 @@ class RoomActor extends Actor {
           if (canMerge) {
             conquerer.updateRadius(colony.radius)
 
-            users -= body.colonyId
+            users -= colonyId
 
             // merged message를 모두에게 보냄
-            broadCast(
-              WSOutgoingMessage(
-                OutgoingMessageTypes.merged,
-                MergedBody(conquerer).toJson
-              )
-            )
+            broadCast(MergedBody(conquerer))
 
             // merge 당한 유저에게는 wasMerged message를 보냄
-            colonyActor ! WSOutgoingMessage(OutgoingMessageTypes.warsMerged, JsString(""))
+            colonyActor ! OutgoingMessage(WasMergedBody)
           }
-        case agario.IncomingMessageTypes.eat =>
-          val body = message.body.convertTo[EatBody]
+
+        case EatBody(preyId) =>
           // eat 가능한지 validation
           val (eater, _) = users(userId)
-          val prey = preys(body.preyId)
+          val prey = preys(preyId)
 
           val distance = eater.position distanceFrom prey.position
           val canEat = distance <= eater.radius
@@ -120,15 +105,10 @@ class RoomActor extends Actor {
           if (canEat) {
             eater.updateRadius(prey.radius)
 
-            preys -= body.preyId
+            preys -= preyId
 
             // eated message를 모두에게 보냄
-            broadCast(
-              WSOutgoingMessage(
-                OutgoingMessageTypes.eated,
-                MergedBody(eater).toJson
-              )
-            )
+            broadCast(MergedBody(eater))
 
             // 먹이 갯수가 많이 떨어지면 seeding 해주기
             if (preys.size < 50) {
@@ -136,16 +116,11 @@ class RoomActor extends Actor {
 
               preys ++= newPreys
 
-              broadCast(
-                WSOutgoingMessage(
-                  OutgoingMessageTypes.seed,
-                  SeedBody(newPreys.map(_._2).toList).toJson
-                )
-              )
+              broadCast(SeedBody(newPreys.map(_._2).toList))
             }
           }
       }
   }
 
-  def broadCast(msg: WSOutgoingMessage): Unit = users.values.foreach(_._2 ! msg)
+  private def broadCast(messageBody: OutgoingMessageBody): Unit = users.values.foreach(_._2 ! OutgoingMessage(messageBody))
 }

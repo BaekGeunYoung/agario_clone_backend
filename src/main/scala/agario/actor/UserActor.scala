@@ -2,13 +2,11 @@ package agario.actor
 
 import java.util.UUID
 
+import agario.actor.RoomActor.{IncomingMessage, OutgoingMessage}
 import akka.actor.{Actor, ActorRef}
-import agario.{WSIncomingMessage, WSOutgoingMessage}
 
 object UserActor {
   case class Connected(outgoing: ActorRef, userId: UUID, userName: String)
-  case class IncomingMessage(text: String, author: UUID)
-  case class OutgoingMessage(text: String, author: UUID)
 }
 
 class UserActor(room: ActorRef) extends Actor {
@@ -23,10 +21,10 @@ class UserActor(room: ActorRef) extends Actor {
     room ! RoomActor.Join(userId, username)
 
     {
-      case incomingMessage: WSIncomingMessage =>
+      case incomingMessage: IncomingMessage =>
         room ! incomingMessage
 
-      case outgoingMessage: WSOutgoingMessage =>
+      case outgoingMessage: OutgoingMessage =>
         outgoing ! outgoingMessage
     }
   }

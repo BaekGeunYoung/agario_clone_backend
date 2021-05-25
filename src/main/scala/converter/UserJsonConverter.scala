@@ -18,10 +18,10 @@ class UserJsonConverter() extends RootJsonFormat[User] {
     json match {
       case JsObject(fields) =>
         new User(
-          UUID.fromString(fields["id"].asInstanceOf[JsString].value),
-          fields["username"].asInstanceOf[JsString].value,
-          PositionJsonConverter.fromJsObject(fields["position"].asInstanceOf[JsObject]),
-          fields["radius"].asInstanceOf[JsNumber].value.toDouble
+          UUID.fromString(fields("id").asInstanceOf[JsString].value),
+          fields("username").asInstanceOf[JsString].value,
+          PositionJsonConverter.fromJsObject(fields("position").asInstanceOf[JsObject]),
+          fields("radius").asInstanceOf[JsNumber].value.toDouble
         )
       case _ => throw DeserializationException("serialize failed")
     }
