@@ -1,4 +1,4 @@
-package converter
+package agario.presentation.converter
 
 import spray.json.{DeserializationException, JsString, JsValue, RootJsonFormat}
 

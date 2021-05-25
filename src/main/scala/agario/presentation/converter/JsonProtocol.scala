@@ -1,8 +1,9 @@
-package agario
+package agario.presentation.converter
 
-import agario.messagebody.{EatBody, EatedBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody, SeedBody}
+import agario.domain.message.`type`.{IncomingMessageTypes, OutgoingMessageTypes}
+import agario.domain.message.body.{EatBody, EatedBody, JoinBody, MergeBody, MergedBody, ObjectsBody, PositionChangeBody, SeedBody}
+import agario.presentation.message.{WSIncomingMessage, WSOutgoingMessage}
 import spray.json.DefaultJsonProtocol
-import converter.{EnumJsonConverter, PositionJsonConverter, PreyJsonConverter, UUIDJsonConverter, UserJsonConverter}
 
 object JsonProtocol extends DefaultJsonProtocol {
   implicit val uuidConverter = new UUIDJsonConverter()
@@ -13,12 +14,12 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val outgoingMessageTypeConverter = new EnumJsonConverter(OutgoingMessageTypes)
   implicit val wsOutgoingMessageConverter = jsonFormat2(WSOutgoingMessage)
 
-  // object converter
+  // object agario.presentation.converter
   implicit val positionConverter = new PositionJsonConverter()
   implicit val userConverter = new UserJsonConverter()
   implicit val preyConverter = new PreyJsonConverter()
 
-  // ws message body converter
+  // ws message body agario.presentation.converter
   implicit val joinBodyConverter = jsonFormat1(JoinBody)
   implicit val positionChangedBodyConverter = jsonFormat1(PositionChangeBody)
   implicit val objectsBodyConverter = jsonFormat2(ObjectsBody)

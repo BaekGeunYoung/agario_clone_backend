@@ -1,23 +1,25 @@
-package converter
+package agario.presentation.converter
 
 import java.util.UUID
 
-import agario.`object`.{Prey, User}
+import agario.domain.`object`.User
 import spray.json.{DeserializationException, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
-class PreyJsonConverter extends RootJsonFormat[Prey] {
-  override def write(prey: Prey): JsValue =
+class UserJsonConverter() extends RootJsonFormat[User] {
+  override def write(user: User): JsValue =
     JsObject(
-      ("id", JsString(prey.id.toString)),
-      ("position", PositionJsonConverter.toJsObject(prey.position)),
-      ("radius", JsNumber(prey.radius))
+      ("id", JsString(user.id.toString)),
+      ("username", JsString(user.username)),
+      ("position", PositionJsonConverter.toJsObject(user.position)),
+      ("radius", JsNumber(user.radius))
     )
 
-  override def read(json: JsValue): Prey = {
+  override def read(json: JsValue): User = {
     json match {
       case JsObject(fields) =>
-        new Prey(
+        new User(
           UUID.fromString(fields("id").asInstanceOf[JsString].value),
+          fields("username").asInstanceOf[JsString].value,
           PositionJsonConverter.fromJsObject(fields("position").asInstanceOf[JsObject]),
           fields("radius").asInstanceOf[JsNumber].value.toDouble
         )

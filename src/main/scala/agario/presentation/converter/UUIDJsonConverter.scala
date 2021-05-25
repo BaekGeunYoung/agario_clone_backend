@@ -1,4 +1,4 @@
-package converter
+package agario.presentation.converter
 
 import java.util.UUID
 

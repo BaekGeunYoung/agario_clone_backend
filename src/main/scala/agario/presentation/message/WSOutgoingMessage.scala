@@ -1,9 +1,9 @@
-package agario
+package agario.presentation.message
 
-import agario.messagebody.{EatedBody, JoinBody, MergedBody, ObjectsBody, OutgoingMessageBody, SeedBody, WasMergedBody}
-import spray.json.JsValue
-import agario.JsonProtocol._
-import spray.json._
+import agario.domain.message.`type`.OutgoingMessageTypes
+import agario.domain.message.body._
+import agario.presentation.converter.JsonProtocol._
+import spray.json.{JsValue, _}
 
 case class WSOutgoingMessage(`type`: OutgoingMessageTypes.Value, body: JsValue)
 

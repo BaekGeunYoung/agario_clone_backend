@@ -1,4 +1,4 @@
-package agario.`object`
+package agario.domain.`object`
 
 import java.util.UUID
 

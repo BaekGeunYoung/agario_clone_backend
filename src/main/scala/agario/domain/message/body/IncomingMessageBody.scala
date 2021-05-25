@@ -1,8 +1,8 @@
-package agario.messagebody
+package agario.domain.message.body
 
 import java.util.UUID
 
-import agario.`object`.Position
+import agario.domain.`object`.Position
 
 sealed trait IncomingMessageBody
 

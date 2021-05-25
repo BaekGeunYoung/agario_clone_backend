@@ -1,10 +1,9 @@
-package agario.actor
+package agario.domain.actor
 
 import java.util.UUID
 
-import agario.Rooms
-import agario.`object`.{Position, Prey, User}
-import agario.messagebody._
+import agario.domain.`object`.{Position, Prey, Rooms, User}
+import agario.domain.message.body.{EatBody, IncomingMessageBody, JoinBody, MergeBody, MergedBody, ObjectsBody, OutgoingMessageBody, PositionChangeBody, SeedBody, WasMergedBody}
 import akka.actor._
 import com.typesafe.config.ConfigFactory
 

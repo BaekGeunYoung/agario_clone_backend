@@ -1,7 +1,7 @@
-package agario
+package agario.domain.`object`
 
+import agario.domain.actor.RoomActor
 import akka.actor.{ActorRef, ActorSystem, Props}
-import agario.actor.RoomActor
 import com.typesafe.config.ConfigFactory
 
 object Rooms {

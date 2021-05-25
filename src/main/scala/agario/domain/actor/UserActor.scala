@@ -1,8 +1,8 @@
-package agario.actor
+package agario.domain.actor
 
 import java.util.UUID
 
-import agario.actor.RoomActor.{IncomingMessage, OutgoingMessage}
+import agario.domain.actor.RoomActor.{IncomingMessage, OutgoingMessage}
 import akka.actor.{Actor, ActorRef}
 
 object UserActor {
