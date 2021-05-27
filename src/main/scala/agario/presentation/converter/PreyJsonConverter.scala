@@ -2,7 +2,7 @@ package agario.presentation.converter
 
 import java.util.UUID
 
-import agario.domain.`object`.{Prey, User}
+import agario.domain.model.{Prey, User}
 import spray.json.{DeserializationException, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
 class PreyJsonConverter extends RootJsonFormat[Prey] {

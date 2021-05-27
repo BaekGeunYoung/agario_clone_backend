@@ -1,6 +1,6 @@
 package agario.presentation.converter
 
-import agario.domain.`object`.Position
+import agario.domain.model.Position
 import spray.json.{JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
 object PositionJsonConverter {

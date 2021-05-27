@@ -2,7 +2,7 @@ package agario.presentation
 
 import java.util.UUID
 
-import agario.domain.`object`.Rooms
+import agario.domain.model.Rooms
 import agario.domain.actor.RoomActor.{IncomingMessage, OutgoingMessage}
 import agario.domain.actor.UserActor
 import agario.presentation.message.{WSIncomingMessage, WSOutgoingMessageFactory}
@@ -30,6 +30,7 @@ object Router {
     val incomingMessages: Sink[Message, NotUsed] =
       Flow[Message].map {
         case TextMessage.Strict(text) =>
+          println()
           IncomingMessage(
             userId,
             text.parseJson.convertTo[WSIncomingMessage].toMessageBody

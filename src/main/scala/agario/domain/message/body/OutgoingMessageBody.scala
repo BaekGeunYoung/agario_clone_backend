@@ -1,6 +1,6 @@
 package agario.domain.message.body
 
-import agario.domain.`object`.{Prey, User}
+import agario.domain.model.{Prey, User}
 
 sealed trait OutgoingMessageBody
 

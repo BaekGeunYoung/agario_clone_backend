@@ -2,7 +2,7 @@ package agario.domain.message.body
 
 import java.util.UUID
 
-import agario.domain.`object`.Position
+import agario.domain.model.Position
 
 sealed trait IncomingMessageBody
 

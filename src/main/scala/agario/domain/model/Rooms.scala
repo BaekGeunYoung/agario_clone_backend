@@ -1,4 +1,4 @@
-package agario.domain.`object`
+package agario.domain.model
 
 import agario.domain.actor.RoomActor
 import akka.actor.{ActorRef, ActorSystem, Props}
@@ -9,13 +9,13 @@ object Rooms {
   var rooms: List[(ActorRef, Int)] = List()
 
   def findOrCreate()(implicit actorSystem: ActorSystem): ActorRef = {
-    if (Rooms.rooms.last._2 >= roomCapacity) createNewRoom()
-    else Rooms.rooms.last._1
+    if (rooms.isEmpty || rooms.last._2 >= roomCapacity) createNewRoom()
+    else rooms.last._1
   }
 
   private def createNewRoom()(implicit actorSystem: ActorSystem): ActorRef = {
     val room = actorSystem.actorOf(Props(new RoomActor))
-    Rooms.rooms = Rooms.rooms :+ (room, 0)
+    rooms = rooms :+ (room, 0)
 
     room
   }

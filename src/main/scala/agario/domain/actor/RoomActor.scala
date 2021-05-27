@@ -2,7 +2,7 @@ package agario.domain.actor
 
 import java.util.UUID
 
-import agario.domain.`object`.{Position, Prey, Rooms, User}
+import agario.domain.model.{Position, Prey, Rooms, User}
 import agario.domain.message.body.{EatBody, IncomingMessageBody, JoinBody, MergeBody, MergedBody, ObjectsBody, OutgoingMessageBody, PositionChangeBody, SeedBody, WasMergedBody}
 import akka.actor._
 import com.typesafe.config.ConfigFactory
@@ -15,7 +15,7 @@ object RoomActor {
 
   val roomHeight = configFactory.getDouble("roomHeight")
   val roomWidth = configFactory.getDouble("roomWidth")
-  val initialRadius = configFactory.getDouble("initalRadius")
+  val initialRadius = configFactory.getDouble("initialRadius")
   val preyRadius = configFactory.getDouble("preyRadius")
 
   case class Join(userId: UUID, username: String)
@@ -71,7 +71,7 @@ class RoomActor extends Actor {
         case PositionChangeBody(position) =>
           users(userId)._1.position = position
 
-          broadCast(ObjectsBody(users.map(_._2._1).toList, preys.map(_._2).toList))
+          broadCast(ObjectsBody(users.map(_._2._1).toList, preys.values.toList))
 
         case MergeBody(colonyId) =>
           // merge 가능한지 vaildation
@@ -115,7 +115,7 @@ class RoomActor extends Actor {
 
               preys ++= newPreys
 
-              broadCast(SeedBody(newPreys.map(_._2).toList))
+              broadCast(SeedBody(newPreys.values.toList))
             }
           }
       }

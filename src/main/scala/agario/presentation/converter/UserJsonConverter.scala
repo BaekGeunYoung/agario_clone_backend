@@ -2,7 +2,7 @@ package agario.presentation.converter
 
 import java.util.UUID
 
-import agario.domain.`object`.User
+import agario.domain.model.User
 import spray.json.{DeserializationException, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
 class UserJsonConverter() extends RootJsonFormat[User] {

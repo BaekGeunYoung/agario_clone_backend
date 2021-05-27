@@ -1,4 +1,4 @@
-package agario.domain.`object`
+package agario.domain.model
 
 class Position(val x: Double, val y: Double) {
   def distanceFrom(other: Position): Double =
