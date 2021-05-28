@@ -9,8 +9,10 @@ object Rooms {
   var rooms: List[(ActorRef, Int)] = List()
 
   def findOrCreate()(implicit actorSystem: ActorSystem): ActorRef = {
-    if (rooms.isEmpty || rooms.last._2 >= roomCapacity) createNewRoom()
-    else rooms.last._1
+    val affordables = rooms.filter(_._2 < roomCapacity)
+
+    if (affordables.isEmpty) createNewRoom()
+    else affordables.head._1
   }
 
   private def createNewRoom()(implicit actorSystem: ActorSystem): ActorRef = {

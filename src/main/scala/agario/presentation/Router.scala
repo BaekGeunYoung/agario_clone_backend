@@ -30,7 +30,6 @@ object Router {
     val incomingMessages: Sink[Message, NotUsed] =
       Flow[Message].map {
         case TextMessage.Strict(text) =>
-          println()
           IncomingMessage(
             userId,
             text.parseJson.convertTo[WSIncomingMessage].toMessageBody
