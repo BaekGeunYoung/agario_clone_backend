@@ -109,8 +109,8 @@ username은 사용자로부터 입력받은 값, id는 클라이언트가 UUID�
 {
   "type": "MERGED",
   "body": {
-    "position": {"x": ?, "y": ?},
-    "radius": ? 
+    "user_after_merge": User,
+    "colony_id": UUID
   }
 }
 ```
@@ -137,8 +137,8 @@ username은 사용자로부터 입력받은 값, id는 클라이언트가 UUID�
 {
   "type": "EATED",
   "body": {
-    "position": {"x": ?, "y": ?},
-    "radius": ?
+    "user_after_eat": User,
+    "prey_id": UUID
   }
 }
 ```

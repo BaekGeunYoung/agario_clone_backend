@@ -87,7 +87,7 @@ class RoomActor extends Actor {
             users -= colonyId
 
             // merged message를 모두에게 보냄
-            broadCast(MergedBody(conquerer))
+            broadCast(MergedBody(conquerer, colonyId))
 
             // merge 당한 유저에게는 wasMerged message를 보냄
             colonyActor ! OutgoingMessage(WasMergedBody)
@@ -107,7 +107,7 @@ class RoomActor extends Actor {
             preys -= preyId
 
             // eated message를 모두에게 보냄
-            broadCast(MergedBody(eater))
+            broadCast(MergedBody(eater, preyId))
 
             // 먹이 갯수가 많이 떨어지면 seeding 해주기
             if (preys.size < 50) {

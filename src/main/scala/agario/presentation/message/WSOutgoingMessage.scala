@@ -10,10 +10,10 @@ case class WSOutgoingMessage(`type`: OutgoingMessageTypes.Value, body: JsValue)
 object WSOutgoingMessageFactory {
   def fromMessageBody(messageBody: OutgoingMessageBody): WSOutgoingMessage = messageBody match {
     case body: JoinBody => WSOutgoingMessage(OutgoingMessageTypes.join, body.toJson)
-    case body: ObjectsBody => WSOutgoingMessage(OutgoingMessageTypes.join, body.toJson)
-    case body: MergedBody => WSOutgoingMessage(OutgoingMessageTypes.join, body.toJson)
-    case body: SeedBody => WSOutgoingMessage(OutgoingMessageTypes.join, body.toJson)
-    case body: EatedBody => WSOutgoingMessage(OutgoingMessageTypes.join, body.toJson)
-    case WasMergedBody => WSOutgoingMessage(OutgoingMessageTypes.join, JsString(""))
+    case body: ObjectsBody => WSOutgoingMessage(OutgoingMessageTypes.objects, body.toJson)
+    case body: MergedBody => WSOutgoingMessage(OutgoingMessageTypes.merged, body.toJson)
+    case body: SeedBody => WSOutgoingMessage(OutgoingMessageTypes.seed, body.toJson)
+    case body: EatedBody => WSOutgoingMessage(OutgoingMessageTypes.eated, body.toJson)
+    case WasMergedBody => WSOutgoingMessage(OutgoingMessageTypes.wasMerged, JsString(""))
   }
 }
