@@ -9,8 +9,8 @@ class User(
   var radius: Double,
   val color: String
 ) {
-  def updateRadius(smallRadius: Double): Double = {
+  def updateRadius(smallRadius: Double): Unit = {
     val areaSum = (Math.PI * radius * radius) + (Math.PI * smallRadius * smallRadius)
-    Math.sqrt(areaSum / Math.PI)
+    this.radius = Math.sqrt(areaSum / Math.PI)
   }
 }
