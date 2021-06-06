@@ -63,14 +63,12 @@ class RoomActor extends Actor {
     color
   }
 
-  override def postRestart(t: Throwable) = println("=================restarted================")
-
   def receive = {
     case Join(userId, username) =>
       val newUser = new User(userId, username, genRandomPosition, initialRadius, genRandomColor)
 
       users += userId -> (newUser, sender())
-      println(s"new user joined. current user list: ${users.map(_._2._1.id)}")
+      log.debug(s"new user joined. current user list: ${users.map(_._2._1.id)}")
 
       rooms = rooms.map { pair =>
         if (context.self == pair._1) (pair._1, users.size)
@@ -88,71 +86,63 @@ class RoomActor extends Actor {
     case IncomingMessage(userId, message) =>
       message match {
         case PositionChangeBody(position) =>
-          println(s"${LocalDateTime.now()}: received POSITION_CHANGED")
-          println(users.map(_._2._1.id))
-          try {
-            users(userId)._1.position = position
-          } catch  {
-            case e: Exception => println(e)
-          }
+          log.debug(s"${LocalDateTime.now()}: received POSITION_CHANGED. userId: $userId")
+
+          users.get(userId).foreach { _._1.position = position }
 
           broadCast(ObjectsBody(users.map(_._2._1).toList, preys.values.toList))
 
         case MergeBody(colonyId) =>
-          println(s"${LocalDateTime.now()}: received MERGE : colonyId: $colonyId, conquererId: $userId")
-          // merge 가능한지 vaildation
-          val conquererOption = users.get(userId)
-          val colonyOption = users.get(colonyId)
+          log.debug(s"${LocalDateTime.now()}: received MERGE. colonyId: $colonyId, conquererId: $userId")
 
-          if (conquererOption.isDefined && colonyOption.isDefined) {
-            val (conquerer, _) = conquererOption.get
-            val (colony, colonyActor) = colonyOption.get
-            val distance = conquerer.position distanceFrom colony.position
-            val canMerge = distance <= conquerer.radius
+          users.get(userId).flatMap { case (conquerer, _) =>
+            users.get(colonyId).map { case (colony, colonyActor) =>
+              val distance = conquerer.position distanceFrom colony.position
+              val canMerge = distance <= conquerer.radius
 
-            if (canMerge) {
-              conquerer.updateRadius(colony.radius)
+              // merge 가능한지 vaildation
+              if (canMerge) {
+                conquerer.updateRadius(colony.radius)
 
-              users -= colonyId
+                users -= colonyId
 
-              // merged message를 모두에게 보냄
-              broadCast(MergedBody(conquerer, colonyId))
+                // merged message를 모두에게 보냄
+                broadCast(MergedBody(conquerer, colonyId))
 
-              // merge 당한 유저에게는 wasMerged message를 보냄
-              colonyActor ! OutgoingMessage(WasMergedBody)
-            }
-          }
-
-        case EatBody(preyId) =>
-          println(s"${LocalDateTime.now()}: received EAT, user: ${users(userId)._1.username}, preyId: ${preyId}")
-          // eat 가능한지 validation
-          val (eater, _) = users(userId)
-          val prey = preys.get(preyId)
-
-          if (prey.isDefined) {
-            val distance = eater.position distanceFrom prey.get.position
-            val canEat = distance <= eater.radius
-
-            if (canEat) {
-              eater.updateRadius(prey.get.radius)
-
-              preys -= preyId
-
-              // eated message를 모두에게 보냄
-              println(s"${LocalDateTime.now()}: send EATED, eater: ${eater.username}, preyId: ${preyId}")
-              broadCast(EatedBody(eater, preyId))
-
-              // 먹이 갯수가 많이 떨어지면 seeding 해주기
-              if (preys.size < preyMaxNumber / 2) {
-                val newPreys = supplyPreys(preyMaxNumber / 2)
-
-                preys ++= newPreys
-
-                broadCast(SeedBody(newPreys.values.toList))
+                // merge 당한 유저에게는 wasMerged message를 보냄
+                colonyActor ! OutgoingMessage(WasMergedBody)
               }
             }
           }
 
+        case EatBody(preyId) =>
+          log.debug(s"${LocalDateTime.now()}: received EAT, user: ${users(userId)._1.username}, preyId: ${preyId}")
+          users.get(userId).flatMap { case (eater, _) =>
+            preys.get(preyId).map { prey =>
+              val distance = eater.position distanceFrom prey.position
+              val canEat = distance <= eater.radius
+
+              // eat 가능한지 validation
+              if (canEat) {
+                eater.updateRadius(prey.radius)
+
+                preys -= preyId
+
+                // eated message를 모두에게 보냄
+                log.debug(s"${LocalDateTime.now()}: send EATED, eater: ${eater.username}, preyId: ${preyId}")
+                broadCast(EatedBody(eater, preyId))
+
+                // 먹이 갯수가 많이 떨어지면 seeding 해주기
+                if (preys.size < preyMaxNumber / 2) {
+                  val newPreys = supplyPreys(preyMaxNumber / 2)
+
+                  preys ++= newPreys
+
+                  broadCast(SeedBody(newPreys.values.toList))
+                }
+              }
+            }
+          }
       }
   }
 
