@@ -134,11 +134,7 @@ class RoomActor extends Actor {
             if (canEat) {
               eater.updateRadius(prey.get.radius)
 
-              try {
-                preys -= preyId
-              } catch {
-                case e: Exception => println(s"-------------$e")
-              }
+              preys -= preyId
 
               // eated message를 모두에게 보냄
               println(s"${LocalDateTime.now()}: send MERGED, eater: ${eater.username}, preyId: ${preyId}")
