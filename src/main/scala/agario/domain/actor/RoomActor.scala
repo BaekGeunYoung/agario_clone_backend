@@ -16,6 +16,7 @@ object RoomActor {
   val roomWidth = configFactory.getDouble("roomWidth")
   val initialRadius = configFactory.getDouble("initialRadius")
   val preyRadius = configFactory.getDouble("preyRadius")
+  val preyMaxNumber = configFactory.getInt("preyMaxNumber")
 
   case class Join(userId: UUID, username: String)
   case class IncomingMessage(userId: UUID, body: IncomingMessageBody)
@@ -29,7 +30,7 @@ class RoomActor extends Actor {
   var users: concurrent.Map[UUID, (User, ActorRef)] = concurrent.TrieMap.empty
   var preys: concurrent.Map[UUID, Prey] = initPreys
 
-  private def initPreys: concurrent.Map[UUID, Prey] = supplyPreys(100)
+  private def initPreys: concurrent.Map[UUID, Prey] = supplyPreys(preyMaxNumber)
 
   private def supplyPreys(num: Int): concurrent.Map[UUID, Prey] =
     concurrent.TrieMap.from(
@@ -121,8 +122,8 @@ class RoomActor extends Actor {
             broadCast(MergedBody(eater, preyId))
 
             // 먹이 갯수가 많이 떨어지면 seeding 해주기
-            if (preys.size < 50) {
-              val newPreys = supplyPreys(50)
+            if (preys.size < preyMaxNumber / 2) {
+              val newPreys = supplyPreys(preyMaxNumber / 2)
 
               preys ++= newPreys
 
