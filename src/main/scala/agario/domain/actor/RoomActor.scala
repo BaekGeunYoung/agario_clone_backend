@@ -4,8 +4,10 @@ import java.util.UUID
 import agario.domain.model.{Position, Prey, Rooms, User}
 import agario.domain.message.body.{EatBody, IncomingMessageBody, JoinBody, MergeBody, MergedBody, ObjectsBody, OutgoingMessageBody, PositionChangeBody, SeedBody, WasMergedBody}
 import akka.actor._
+import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
+import java.time.LocalDateTime
 import scala.collection._
 import scala.util.Random
 
@@ -26,6 +28,8 @@ object RoomActor {
 class RoomActor extends Actor {
   import RoomActor._
   import Rooms.rooms
+
+  val log = Logging(context.system, this)
 
   var users: concurrent.Map[UUID, (User, ActorRef)] = concurrent.TrieMap.empty
   var preys: concurrent.Map[UUID, Prey] = initPreys
@@ -64,6 +68,7 @@ class RoomActor extends Actor {
       val newUser = new User(userId, username, genRandomPosition, initialRadius, genRandomColor)
 
       users += userId -> (newUser, sender())
+      println(s"new user joined. current user list: ${users.map(_._2._1.id)}")
 
       rooms = rooms.map { pair =>
         if (context.self == pair._1) (pair._1, users.size)
@@ -81,55 +86,75 @@ class RoomActor extends Actor {
     case IncomingMessage(userId, message) =>
       message match {
         case PositionChangeBody(position) =>
-          users(userId)._1.position = position
+          println(s"${LocalDateTime.now()}: received POSITION_CHANGED")
+          println(users.map(_._2._1.id))
+          try {
+            users(userId)._1.position = position
+          } catch  {
+            case e: Exception => println(e)
+          }
 
           broadCast(ObjectsBody(users.map(_._2._1).toList, preys.values.toList))
 
         case MergeBody(colonyId) =>
+          println(s"${LocalDateTime.now()}: received MERGE")
           // merge 가능한지 vaildation
-          val (conquerer, _) = users(userId)
-          val (colony, colonyActor) = users(colonyId)
+          val conquererOption = users.get(userId)
+          val colonyOption = users.get(colonyId)
 
-          val distance = conquerer.position distanceFrom colony.position
-          val canMerge = distance <= conquerer.radius
+          if (conquererOption.isDefined && colonyOption.isDefined) {
+            val (conquerer, _) = conquererOption.get
+            val (colony, colonyActor) = colonyOption.get
+            val distance = conquerer.position distanceFrom colony.position
+            val canMerge = distance <= conquerer.radius
 
-          if (canMerge) {
-            conquerer.updateRadius(colony.radius)
+            if (canMerge) {
+              conquerer.updateRadius(colony.radius)
 
-            users -= colonyId
+              users -= colonyId
 
-            // merged message를 모두에게 보냄
-            broadCast(MergedBody(conquerer, colonyId))
+              // merged message를 모두에게 보냄
+              broadCast(MergedBody(conquerer, colonyId))
 
-            // merge 당한 유저에게는 wasMerged message를 보냄
-            colonyActor ! OutgoingMessage(WasMergedBody)
+              // merge 당한 유저에게는 wasMerged message를 보냄
+              colonyActor ! OutgoingMessage(WasMergedBody)
+            }
           }
 
         case EatBody(preyId) =>
+          println(s"${LocalDateTime.now()}: received EAT, user: ${users(userId)._1.username}, preyId: ${preyId}")
           // eat 가능한지 validation
           val (eater, _) = users(userId)
-          val prey = preys(preyId)
+          val prey = preys.get(preyId)
 
-          val distance = eater.position distanceFrom prey.position
-          val canEat = distance <= eater.radius
+          if (prey.isDefined) {
+            val distance = eater.position distanceFrom prey.get.position
+            val canEat = distance <= eater.radius
 
-          if (canEat) {
-            eater.updateRadius(prey.radius)
+            if (canEat) {
+              eater.updateRadius(prey.get.radius)
 
-            preys -= preyId
+              try {
+                preys -= preyId
+              } catch {
+                case e: Exception => println(s"-------------$e")
+              }
 
-            // eated message를 모두에게 보냄
-            broadCast(MergedBody(eater, preyId))
+              // eated message를 모두에게 보냄
+              println(s"${LocalDateTime.now()}: send MERGED, eater: ${eater.username}, preyId: ${preyId}")
+              broadCast(MergedBody(eater, preyId))
 
-            // 먹이 갯수가 많이 떨어지면 seeding 해주기
-            if (preys.size < preyMaxNumber / 2) {
-              val newPreys = supplyPreys(preyMaxNumber / 2)
+              // 먹이 갯수가 많이 떨어지면 seeding 해주기
+              if (preys.size < preyMaxNumber / 2) {
+                val newPreys = supplyPreys(preyMaxNumber / 2)
 
-              preys ++= newPreys
+                preys ++= newPreys
 
-              broadCast(SeedBody(newPreys.values.toList))
+                broadCast(SeedBody(newPreys.values.toList))
+              }
             }
           }
+
       }
   }
 
