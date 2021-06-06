@@ -36,7 +36,7 @@ class RoomActor extends Actor {
     concurrent.TrieMap.from(
       (0 until num).map { _ =>
         val id = UUID.randomUUID()
-        val prey = new Prey(id, genRandomPosition, preyRadius)
+        val prey = new Prey(id, genRandomPosition, preyRadius, genRandomColor)
         (id, prey)
       }
     )

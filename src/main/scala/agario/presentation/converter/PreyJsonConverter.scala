@@ -10,7 +10,8 @@ class PreyJsonConverter extends RootJsonFormat[Prey] {
     JsObject(
       ("id", JsString(prey.id.toString)),
       ("position", PositionJsonConverter.toJsObject(prey.position)),
-      ("radius", JsNumber(prey.radius))
+      ("radius", JsNumber(prey.radius)),
+      ("color", JsString(prey.color))
     )
 
   override def read(json: JsValue): Prey = {
@@ -19,7 +20,8 @@ class PreyJsonConverter extends RootJsonFormat[Prey] {
         new Prey(
           UUID.fromString(fields("id").asInstanceOf[JsString].value),
           PositionJsonConverter.fromJsObject(fields("position").asInstanceOf[JsObject]),
-          fields("radius").asInstanceOf[JsNumber].value.toDouble
+          fields("radius").asInstanceOf[JsNumber].value.toDouble,
+          fields("color").asInstanceOf[JsString].value
         )
       case _ => throw DeserializationException("serialize failed")
     }
