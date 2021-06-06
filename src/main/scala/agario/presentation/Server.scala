@@ -1,6 +1,7 @@
 package agario.presentation
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
 
 import scala.io.StdIn
@@ -11,8 +12,9 @@ object Server {
 
   def main(args: Array[String]): Unit = {
     val binding = Http().newServerAt("127.0.0.1", 8080).bind(Router.route)
+    val logger = Logging(system, getClass)
 
-    println("Started server at 127.0.0.1:8080, press enter to kill server")
+    logger.info("Started server at 127.0.0.1:8080, press enter to kill server")
     StdIn.readLine()
 
     binding

@@ -68,7 +68,7 @@ class RoomActor extends Actor {
       val newUser = new User(userId, username, genRandomPosition, initialRadius, genRandomColor)
 
       users += userId -> (newUser, sender())
-      log.debug(s"new user joined. current user list: ${users.map(_._2._1.id)}")
+      log.info(s"new user joined. current user list: ${users.map(_._2._1.id).toList}")
 
       rooms = rooms.map { pair =>
         if (context.self == pair._1) (pair._1, users.size)
@@ -76,24 +76,24 @@ class RoomActor extends Actor {
       }
 
       broadCast(JoinBody(newUser))
+      log.info(s"sent JOIN. username: ${newUser.username}")
 
       context.watch(sender())
 
     case Terminated(user) =>
       val terminatedUser = users.filter { mapEntry => mapEntry._2._2 == user }.head
       users -= terminatedUser._1
+      log.info(s"user ${terminatedUser._2._1.username} terminated. current user list: ${users.map(_._2._1.id).toList} ")
 
     case IncomingMessage(userId, message) =>
       message match {
         case PositionChangeBody(position) =>
-          log.debug(s"${LocalDateTime.now()}: received POSITION_CHANGED. userId: $userId")
-
           users.get(userId).foreach { _._1.position = position }
 
           broadCast(ObjectsBody(users.map(_._2._1).toList, preys.values.toList))
 
         case MergeBody(colonyId) =>
-          log.debug(s"${LocalDateTime.now()}: received MERGE. colonyId: $colonyId, conquererId: $userId")
+          log.info(s"received MERGE. colonyId: $colonyId, conquererId: $userId")
 
           users.get(userId).flatMap { case (conquerer, _) =>
             users.get(colonyId).map { case (colony, colonyActor) =>
@@ -108,15 +108,17 @@ class RoomActor extends Actor {
 
                 // merged message를 모두에게 보냄
                 broadCast(MergedBody(conquerer, colonyId))
+                log.info(s"sent MERGED, conquerer: ${conquerer.username}, colony: ${colony.username}")
 
                 // merge 당한 유저에게는 wasMerged message를 보냄
                 colonyActor ! OutgoingMessage(WasMergedBody)
+                log.info(s"sent WAS_MERGED, conquerer: ${conquerer.username}, colony: ${colony.username}")
               }
             }
           }
 
         case EatBody(preyId) =>
-          log.debug(s"${LocalDateTime.now()}: received EAT, user: ${users(userId)._1.username}, preyId: ${preyId}")
+          log.info(s"received EAT, user: ${users(userId)._1.username}, preyId: ${preyId}")
           users.get(userId).flatMap { case (eater, _) =>
             preys.get(preyId).map { prey =>
               val distance = eater.position distanceFrom prey.position
@@ -129,8 +131,8 @@ class RoomActor extends Actor {
                 preys -= preyId
 
                 // eated message를 모두에게 보냄
-                log.debug(s"${LocalDateTime.now()}: send EATED, eater: ${eater.username}, preyId: ${preyId}")
                 broadCast(EatedBody(eater, preyId))
+                log.info(s"sent EATED, eater: ${eater.username}, preyId: ${preyId}")
 
                 // 먹이 갯수가 많이 떨어지면 seeding 해주기
                 if (preys.size < preyMaxNumber / 2) {
@@ -139,6 +141,7 @@ class RoomActor extends Actor {
                   preys ++= newPreys
 
                   broadCast(SeedBody(newPreys.values.toList))
+                  log.info("sent SEED")
                 }
               }
             }
