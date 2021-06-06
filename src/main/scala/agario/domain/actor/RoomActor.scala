@@ -1,7 +1,6 @@
 package agario.domain.actor
 
 import java.util.UUID
-
 import agario.domain.model.{Position, Prey, Rooms, User}
 import agario.domain.message.body.{EatBody, IncomingMessageBody, JoinBody, MergeBody, MergedBody, ObjectsBody, OutgoingMessageBody, PositionChangeBody, SeedBody, WasMergedBody}
 import akka.actor._
@@ -47,9 +46,21 @@ class RoomActor extends Actor {
     new Position(x, y)
   }
 
+  private def genRandomColor: String = {
+    val charSet = "0123456789abcdef"
+
+    var color = "#"
+
+    (0 until 6).foreach { _ =>
+      color = color + charSet.charAt(Random.between(0, 16))
+    }
+
+    color
+  }
+
   def receive = {
     case Join(userId, username) =>
-      val newUser = new User(userId, username, genRandomPosition, initialRadius)
+      val newUser = new User(userId, username, genRandomPosition, initialRadius, genRandomColor)
 
       users += userId -> (newUser, sender())
 
