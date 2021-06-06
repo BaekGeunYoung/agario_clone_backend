@@ -2,7 +2,7 @@ package agario.domain.actor
 
 import java.util.UUID
 import agario.domain.model.{Position, Prey, Rooms, User}
-import agario.domain.message.body.{EatBody, IncomingMessageBody, JoinBody, MergeBody, MergedBody, ObjectsBody, OutgoingMessageBody, PositionChangeBody, SeedBody, WasMergedBody}
+import agario.domain.message.body.{EatBody, EatedBody, IncomingMessageBody, JoinBody, MergeBody, MergedBody, ObjectsBody, OutgoingMessageBody, PositionChangeBody, SeedBody, WasMergedBody}
 import akka.actor._
 import akka.event.Logging
 import com.typesafe.config.ConfigFactory
@@ -63,6 +63,8 @@ class RoomActor extends Actor {
     color
   }
 
+  override def postRestart(t: Throwable) = println("=================restarted================")
+
   def receive = {
     case Join(userId, username) =>
       val newUser = new User(userId, username, genRandomPosition, initialRadius, genRandomColor)
@@ -97,7 +99,7 @@ class RoomActor extends Actor {
           broadCast(ObjectsBody(users.map(_._2._1).toList, preys.values.toList))
 
         case MergeBody(colonyId) =>
-          println(s"${LocalDateTime.now()}: received MERGE")
+          println(s"${LocalDateTime.now()}: received MERGE : colonyId: $colonyId, conquererId: $userId")
           // merge 가능한지 vaildation
           val conquererOption = users.get(userId)
           val colonyOption = users.get(colonyId)
@@ -137,8 +139,8 @@ class RoomActor extends Actor {
               preys -= preyId
 
               // eated message를 모두에게 보냄
-              println(s"${LocalDateTime.now()}: send MERGED, eater: ${eater.username}, preyId: ${preyId}")
-              broadCast(MergedBody(eater, preyId))
+              println(s"${LocalDateTime.now()}: send EATED, eater: ${eater.username}, preyId: ${preyId}")
+              broadCast(EatedBody(eater, preyId))
 
               // 먹이 갯수가 많이 떨어지면 seeding 해주기
               if (preys.size < preyMaxNumber / 2) {
